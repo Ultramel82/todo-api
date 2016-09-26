@@ -9,16 +9,32 @@ var _ = require('underscore');
 
 app.use(bodyParser.json());
 
-//GET request /todos
-app.get('/todos', function(req, res) {
-	res.json(todos); //converted into JSON and sent back
+app.get('/', function(req, res) {
+	res.send('Todo API Root');
 });
 
+// GET /todos?completed=true
+app.get('/todos', function(req, res) {
+
+	var queryParams = req.query;
+	var filteredTodos = todos;
+
+	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+		filteredTodos = _.where(filteredTodos, {completed: true});
+	}
+	else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+		filteredTodos = _.where(filteredTodos, {completed: false});
+	}
+
+	res.json(filteredTodos);
+
+
+});
+
+
 //GET request /todos/:id
-//GET request /todos
 app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-
 	var matchedTodo = _.findWhere(todos, {id: todoId});
 
 	//REPLACED BY TOP CODE
@@ -42,6 +58,9 @@ app.get('/todos/:id', function(req, res) {
 	}
 
 });
+
+
+
 
 // POST - can take data
 // URL will be /todos but method will be different
@@ -108,9 +127,7 @@ app.put('/todos/:id', function (req, res) {
 });
 
 
-// app.get('/', function(req, res) {
-// 	res.send('Todo API Root');
-// });
+
 
 app.listen(PORT, function() {
 	console.log('Express listening on port ' + PORT);
