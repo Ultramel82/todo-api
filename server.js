@@ -5,6 +5,7 @@ var PORT = process.env.PORT || 3000;
 
 var todos = [];
 var todoNextId = 1;
+var _ = require('underscore');
 
 app.use(bodyParser.json());
 
@@ -17,16 +18,20 @@ app.get('/todos', function(req, res) {
 //GET request /todos
 app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo;
 
-	// Iteratre over todos array to find a match
-	// if found do res.json(todos) else 404 error
+	var matchedTodo = _.findWhere(todos, {id: todoId});
 
-	todos.forEach(function (todo) {
-		if (todoId === todo.id) {
-			matchedTodo = todo;
-		}
-	});
+	//REPLACED BY TOP CODE
+	// var matchedTodo;
+
+	// // Iteratre over todos array to find a match
+	// // if found do res.json(todos) else 404 error
+
+	// todos.forEach(function (todo) {
+	// 	if (todoId === todo.id) {
+	// 		matchedTodo = todo;
+	// 	}
+	// });
 
 	if (matchedTodo) {
 		res.json(matchedTodo);
@@ -41,11 +46,17 @@ app.get('/todos/:id', function(req, res) {
 // POST - can take data
 // URL will be /todos but method will be different
 app.post('/todos', function(req, res) {
-	var body = req.body;
+	
+	var body = _.pick(req.body, 'description', 'completed');
 
-	//add id field
+	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+		return res.status(400).send();
+	}
+
+	// set body.description to be trimmed value
+	body.description = body.description.trim();
 	body.id = todoNextId++;
-	//push body into array
+
 	todos.push(body);
 	res.json(body);
 });
